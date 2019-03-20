@@ -1,8 +1,8 @@
 from tkinter import *
-import tkinter as ttk
+from tkinter import ttk
 import pandas as pd
 import os.path
-
+import calendar as cal
 
 # reads the larger DF and cuts it down to only the necessary data
 def smallerDF(bigDF,filename):
@@ -20,6 +20,7 @@ def smallerDF(bigDF,filename):
   smallerDF['Month'] = DF['MONTH']
   smallerDF['Aircraft'] = DF['AIRCRAFT_TYPE']
   smallerDF['Seats'] = DF['SEATS']
+  smallerDF['Passengers'] = DF['PASSENGERS']
   smallerDF['Distance'] = DF['DISTANCE']
   smallerDF['Departures Performed'] = DF['DEPARTURES_PERFORMED']
   smallerDF['Departures Scheduled'] = DF['DEPARTURES_SCHEDULED']
@@ -37,7 +38,67 @@ def getSmallerDF(filePath):
 
 # function that is called when clicking the "auto" button
 def autoMenu(filePath):
-  print("auto")
+  DF = getSmallerDF(filePath)
+  
+  # calculate success % and available seat % from given columns and sort
+  DF['Success Percentage'] = (DF['Departures Performed']/DF['Departures Scheduled'])
+  DF['Available Percentage'] = (DF['Passengers']/DF['Seats'])
+
+  # get columns with above 100% rating and replace with 100%
+  above100 = DF['Success Percentage'] > 100
+  DF.loc[above100, 'Success Percentage'] = 100
+
+  scoreDF = pd.DataFrame(columns=("Month","Average Success %", "Average Available Seats %", "Algorithm Score"))
+  monthList = []
+
+  # for loop that converts month numbers to names
+  for month in range(1,13):
+    monthList.append(cal.month_name[month])
+
+  scoreDF['Month'] = monthList  
+  averageSuccessList = []
+  averageSeatList = []
+
+  # for loop for actual score calculation
+  for month in range(1,13):
+    # pull all months that have the matching loop number
+    monthRows = DF['Month'] == month
+
+    # find these rows and get their average, add to list
+    averageSuccessList.append((DF.loc[monthRows, 'Success Percentage']).mean())
+    averageSeatList.append((DF.loc[monthRows, 'Available Percentage']).mean())
+
+  scoreDF['Average Success %'] = averageSuccessList
+  scoreDF['Average Available Seats %'] = averageSeatList
+
+  # The actual algorithm implementation, I consider average flight success to help each
+  # month's score. While the higher the available seats percentage, the more it hurts
+  # the overall score.
+  scoreDF['Algorithm Score'] = (50 * scoreDF['Average Success %']) + (-50 * scoreDF['Average Available Seats %'])
+  scoreDF.sort_values(by=['Algorithm Score'], inplace=True, ascending=False)
+
+  scoreDF.round({'Algorithm Score': 2})
+
+  style = ttk.Style()
+  style.configure("Treeview", padding=20, fieldbackground="#238c63", font=('Helvetica', 15))
+
+  autoFrame = Toplevel(master)
+
+  autoFrame.title("Automatic Flight Recommendations")       
+  autoFrame.grid_rowconfigure(0,weight=1)
+  autoFrame.grid_columnconfigure(0,weight=1)
+
+  # Set the treeview
+  autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Dose', 'Modification date'), style='Treeview')
+
+  autoFrame.heading('#0', text='Month')
+  autoFrame.heading('#1', text='Algorithm Score (Out of 20)')
+  autoFrame.column('#1')
+  autoFrame.column('#0')
+  autoFrame.grid(row=4, columnspan=2, sticky='nsew')
+  
+  for index,month in scoreDF.iterrows():
+    autoFrame.insert('', 'end', text=month['Month'], values=month['Algorithm Score'])
 
 
 # function that is called when clicking the "manual" button
@@ -49,7 +110,6 @@ def manualMenu(filePath):
 
   DF = getSmallerDF(filePath)
   manualFrame = Toplevel(master)
-  # manualFrame.geometry("500x500")
 
   manualFrame.columnconfigure(0, weight=1)
   manualFrame.rowconfigure(0, weight=1)
@@ -66,6 +126,7 @@ def manualMenu(filePath):
   destinationVar = StringVar(value=destinationChoices[0])
   planeVar = StringVar(value=planeChoices[0])
 
+  # Create all of the labels and optionmenus 
   promptLabel = Label(manualFrame, text="Choose an Airline")
   originLabel = Label(manualFrame, text="Choose your Origin City")
   destinationLabel = Label(manualFrame, text="Choose your Destination City")
@@ -83,22 +144,6 @@ def manualMenu(filePath):
   destinationMenu.grid(row = 3, column = 2)
   planeLabel.grid(row = 4, column = 1)
   planeMenu.grid(row = 4, column = 2)
-
-
-
-  # print(airlineVar.get())
-  # print(originVar.get())
-  # print(destinationVar.get())
-  # print("Plane chosen is: " + planeVar.get())
-  # link function to change dropdown
-  # airlineVar.trace('w', lambda: change_dropdown(airlineVar))
-  # originVar.trace('w', change_dropdown)
-  # destinationVar.trace('w', change_dropdown)
-  # planeVar.trace('w', change_dropdown)
-  
-  # auto.mainloop()
-
-
 
 
 # Start of Main
