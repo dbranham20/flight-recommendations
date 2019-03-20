@@ -2,7 +2,7 @@
 A python GUI that recommends flights by carrier based on data given for South Carolina and North Carolina in 2018
 
 ## Environment
-This program uses Python 3.6.7 with tkinter as my GUI. The pandas library is used for .csv intake and manipulation.
+This program uses Python 3.6.7 with tkinter as my GUI. The pandas library is used for `.csv` intake and manipulation. The OS package is used to check for an existing file before running the `smallerDF()` function. The `calendar` package is used to call the package function `month_name[]` to convert month numbers to their names.
 
 ## Intial Run
 The first time this project is run with `python3 main.py`, the program should read from the larger dataset 
