@@ -1,6 +1,9 @@
 # flight-recommendations
 A python GUI that recommends flights by carrier based on data given for South Carolina and North Carolina in 2018
 
+## Environment
+This program uses Python 3.6.7 with tkinter as my GUI. The pandas library is used for .csv intake and manipulation.
+
 ## Intial Run
 The first time this project is run with `python3 main.py`, the program should read from the larger dataset 
 and create the smaller one. Every run after that should read from the smaller data set file and not need the larger one. 
