@@ -4,7 +4,7 @@ A python GUI that recommends flights by carrier based on data given for South Ca
 ## Intial Run
 The first time this project is run with `python3 main.py`, the program should read from the larger dataset 
 and create the smaller one. Every run after that should read from the smaller data set file and not need the larger one. 
-This is done to decrease the reading and compute time required on larger .csv files.
+This is done to decrease the reading and compute time required on larger .csv files. 
 
 ## Algorithm Explanation
 The algorithm used for the auto selection of flights by month is 
