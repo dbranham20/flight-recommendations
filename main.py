@@ -3,7 +3,7 @@ from tkinter import ttk
 import pandas as pd
 import os.path
 import calendar as cal
-
+from datetime import datetime
 # reads the larger DF and cuts it down to only the necessary data
 def smallerDF(bigDF,filename):
   # drop all rows that contain airline flights with 0 seats
@@ -77,7 +77,7 @@ def autoMenu(filePath):
   scoreDF['Algorithm Score'] = (50 * scoreDF['Average Success %']) + (-50 * scoreDF['Average Available Seats %'])
   scoreDF.sort_values(by=['Algorithm Score'], inplace=True, ascending=False)
 
-  scoreDF.round({'Algorithm Score': 2})
+  scoreDF["Algorithm Score"] = scoreDF["Algorithm Score"].round(3)
 
   style = ttk.Style()
   style.configure("Treeview", padding=20, fieldbackground="#238c63", font=('Helvetica', 15))
@@ -97,16 +97,41 @@ def autoMenu(filePath):
   autoFrame.column('#0')
   autoFrame.grid(row=4, columnspan=2, sticky='nsew')
   
+
+
   for index,month in scoreDF.iterrows():
-    autoFrame.insert('', 'end', text=month['Month'], values=month['Algorithm Score'])
+    #insert month into treeview
+    monthRow = autoFrame.insert('', 'end', text=month["Month"], values=month['Algorithm Score'])
+
+    #pull flights from the current iterated month
+    monthNum = datetime.strptime(month["Month"], '%B')
+    monthFlightList = DF.loc[DF['Month'] == monthNum.month]
+    
+    # get the relevant info for sub menus
+    carriers = monthFlightList["Carrier"].tolist()
+    number = monthFlightList["Aircraft"].tolist()
+    city = monthFlightList["Origin City"].tolist()
+    
+    # only keep the first 5
+    carriers = carriers[:5]
+    number = number[:5]
+    city = city[:5]
+
+    # insert list of flights for each month as sub menu
+    for (carr, num, city) in zip(carriers, number, city): 
+      autoFrame.insert(monthRow, "end", text=carr, values=(num,city))
 
 
 # function that is called when clicking the "manual" button
 def manualMenu(filePath):
-
+  selectionList = []
  # on change dropdown value
   def onSelect(value):
-      print("Value chosen is: " + str(value))
+    selectionList.append(str(value))
+
+  def manualLookup():
+    print(selectionList)
+
 
   DF = getSmallerDF(filePath)
   manualFrame = Toplevel(master)
@@ -135,15 +160,17 @@ def manualMenu(filePath):
   originMenu = OptionMenu(manualFrame, originVar, *originChoices, command=onSelect)
   destinationMenu = OptionMenu(manualFrame, destinationVar, *destinationChoices, command=onSelect)
   planeMenu= OptionMenu(manualFrame, planeVar, *planeChoices, command=onSelect)
+  generate = Button(manualFrame, text="Generate", height=5, width=40,fg="#ffffff", bg="#4f4977", command=manualLookup)
 
-  promptLabel.grid(row = 1, column = 1)
-  airlineMenu.grid(row = 1, column = 2)
-  originLabel.grid(row = 2, column = 1)
-  originMenu.grid(row = 2, column = 2)
-  destinationLabel.grid(row = 3, column = 1)
-  destinationMenu.grid(row = 3, column = 2)
-  planeLabel.grid(row = 4, column = 1)
-  planeMenu.grid(row = 4, column = 2)
+  promptLabel.grid(row = 1, column = 1,sticky=(N))
+  airlineMenu.grid(row = 1, column = 2,sticky=(E))
+  originLabel.grid(row = 2, column = 1,sticky=(W))
+  originMenu.grid(row = 2, column = 2,sticky=(E))
+  destinationLabel.grid(row = 3, column = 1,sticky=(W))
+  destinationMenu.grid(row = 3, column = 2,sticky=(E))
+  planeLabel.grid(row = 4, column = 1,sticky=(W))
+  planeMenu.grid(row = 4, column = 2,sticky=(E))
+  generate.grid(column=0,row=5,columnspan=3, padx=5, pady=5, sticky=(W,E))
 
 
 # Start of Main
