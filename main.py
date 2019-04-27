@@ -31,15 +31,12 @@ def smallerDF(bigDF,filename):
 
 
 # function to read the smaller .csv into a dataframe
-def getSmallerDF(filePath):
-  currDF = pd.read_csv(filePath)
+def getSmallerDF():
+  currDF = pd.read_csv("filtered_data.csv")
   return currDF
 
+def theAlgorithm(DF):
 
-# function that is called when clicking the "auto" button
-def autoMenu(filePath):
-  DF = getSmallerDF(filePath)
-  
   # calculate success % and available seat % from given columns and sort
   DF['Success Percentage'] = (DF['Departures Performed']/DF['Departures Scheduled'])
   DF['Available Percentage'] = (DF['Passengers']/DF['Seats'])
@@ -78,13 +75,28 @@ def autoMenu(filePath):
   scoreDF.sort_values(by=['Algorithm Score'], inplace=True, ascending=False)
 
   scoreDF["Algorithm Score"] = scoreDF["Algorithm Score"].round(3)
+  return scoreDF
+
+
+# function that is called when clicking the "auto" button
+def autoMenu(filePath):
+  DF = getSmallerDF()
+  display(DF,"Automatic Flight Recommendations","#3f7049")
+
+def display(DF,mode,color):  
+  # if(displayDF.empty):
+  #   autoMenu()
+  # else:
+
+
+  scoreDF = theAlgorithm(DF)
 
   style = ttk.Style()
-  style.configure("Treeview", padding=20, fieldbackground="#238c63", font=('Helvetica', 15))
+  style.configure("Treeview", padding=20, fieldbackground=color, font=('Helvetica', 15))
 
   autoFrame = Toplevel(master)
 
-  autoFrame.title("Automatic Flight Recommendations")       
+  autoFrame.title(mode)       
   autoFrame.grid_rowconfigure(0,weight=1)
   autoFrame.grid_columnconfigure(0,weight=1)
 
@@ -97,8 +109,6 @@ def autoMenu(filePath):
   autoFrame.column('#0')
   autoFrame.grid(row=4, columnspan=2, sticky='nsew')
   
-
-
   for index,month in scoreDF.iterrows():
     #insert month into treeview
     monthRow = autoFrame.insert('', 'end', text=month["Month"], values=month['Algorithm Score'])
@@ -124,20 +134,41 @@ def autoMenu(filePath):
 
 # function that is called when clicking the "manual" button
 def manualMenu(filePath):
-  selectionList = []
- # on change dropdown value
-  def onSelect(value):
-    selectionList.append(str(value))
+
+  def refreshList():
+    # Default values for dropdowns
+    airlineVar.set("Choose an Airline")
+    originVar.set("Choose your Origin City")
+    destinationVar.set("Choose your Destination City")
+    planeVar.set("Choose your preferred plane")
 
   def manualLookup():
-    print(selectionList)
+    airline = airlineVar.get()
+    origin = originVar.get()
+    dest = destinationVar.get()
+    plane = planeVar.get()
 
+    # if the first option is not selected, the program
+    # still has a Dataframe to look through and filter on
+    filterDF = DF
 
-  DF = getSmallerDF(filePath)
+    if(airline != "Choose an Airline"):
+      filterDF = DF.loc[DF['Carrier'] == airline]
+    if(origin != "Choose your Origin City"):
+      filterDF = filterDF.loc[DF['Origin City'] == origin]
+    if(dest != "Choose your Destination City"):
+      filterDF = filterDF.loc[DF['Destination City'] == dest]
+    if(plane != "Choose your preferred plane"):
+      filterDF = filterDF.loc[DF['Aircraft'] == int(plane)]
+
+    display(filterDF, "Manual Flight Recommendations","#4f4977")
+
+  DF = getSmallerDF()
   manualFrame = Toplevel(master)
 
   manualFrame.columnconfigure(0, weight=1)
   manualFrame.rowconfigure(0, weight=1)
+  manualFrame.title("Manual Flight Recommendations") 
 
   # finds all of the unique values for airlines
   airlineChoices = DF['Carrier'].unique().tolist()
@@ -151,26 +182,33 @@ def manualMenu(filePath):
   destinationVar = StringVar(value=destinationChoices[0])
   planeVar = StringVar(value=planeChoices[0])
 
-  # Create all of the labels and optionmenus 
-  promptLabel = Label(manualFrame, text="Choose an Airline")
-  originLabel = Label(manualFrame, text="Choose your Origin City")
-  destinationLabel = Label(manualFrame, text="Choose your Destination City")
-  planeLabel = Label(manualFrame, text="Choose your preferred plane")
-  airlineMenu = OptionMenu(manualFrame, airlineVar, *airlineChoices, command=onSelect)
-  originMenu = OptionMenu(manualFrame, originVar, *originChoices, command=onSelect)
-  destinationMenu = OptionMenu(manualFrame, destinationVar, *destinationChoices, command=onSelect)
-  planeMenu= OptionMenu(manualFrame, planeVar, *planeChoices, command=onSelect)
-  generate = Button(manualFrame, text="Generate", height=5, width=40,fg="#ffffff", bg="#4f4977", command=manualLookup)
+  # Default values for dropdowns
+  airlineVar.set("Choose an Airline")
+  originVar.set("Choose your Origin City")
+  destinationVar.set("Choose your Destination City")
+  planeVar.set("Choose your preferred plane")
 
-  promptLabel.grid(row = 1, column = 1,sticky=(N))
-  airlineMenu.grid(row = 1, column = 2,sticky=(E))
-  originLabel.grid(row = 2, column = 1,sticky=(W))
-  originMenu.grid(row = 2, column = 2,sticky=(E))
-  destinationLabel.grid(row = 3, column = 1,sticky=(W))
-  destinationMenu.grid(row = 3, column = 2,sticky=(E))
-  planeLabel.grid(row = 4, column = 1,sticky=(W))
-  planeMenu.grid(row = 4, column = 2,sticky=(E))
-  generate.grid(column=0,row=5,columnspan=3, padx=5, pady=5, sticky=(W,E))
+  # Create all of the labels and optionmenus 
+  menuLabel = Label(manualFrame, text="Manual Flight Recommender",font=36,padx=5, pady=5)
+  airlineMenu = OptionMenu(manualFrame, airlineVar, *airlineChoices)
+  originMenu = OptionMenu(manualFrame, originVar, *originChoices)
+  destinationMenu = OptionMenu(manualFrame, destinationVar, *destinationChoices)
+  planeMenu= OptionMenu(manualFrame, planeVar, *planeChoices)
+  generate = Button(manualFrame, text="Generate", height=5, width=40,fg="#ffffff", bg="#4f4977", command=manualLookup)
+  refresh = Button(manualFrame, text="Reset", height=5, width=40,fg="#ffffff", bg="#703f3f", command=refreshList)
+
+  airlineMenu.config(width=30, height=5)
+  originMenu.config(width=30, height=5)
+  destinationMenu.config(width=30, height=5)
+  planeMenu.config(width=30, height=5)
+
+  menuLabel.grid(row=1, column=0, columnspan=5)
+  airlineMenu.grid(row = 2, column = 1,sticky=(E), padx=5, pady=5)
+  originMenu.grid(row = 2, column = 2,sticky=(E) ,padx=5, pady=5)
+  destinationMenu.grid(row = 2, column = 3,sticky=(E), padx=5, pady=5)
+  planeMenu.grid(row = 2, column = 4,sticky=(E), padx=5, pady=5)
+  generate.grid(column=0,row=3,columnspan=4, padx=5, pady=5, sticky=(W,E))
+  refresh.grid(column=4,row=3,columnspan=2, padx=5, pady=5, sticky=(W,E))
 
 
 # Start of Main
@@ -187,7 +225,7 @@ if not os.path.isfile(smallFileName):
 master = Tk()
 master.title("Flight Recommendations")
 
-mainFrame = Frame(master)
+mainFrame = Frame(master, width=500, height=500)
 mainFrame.grid(column=0,row=0, sticky=(N,W,E,S))
 mainFrame.pack(pady=25, padx=25)
 
@@ -197,9 +235,9 @@ auto = Button(mainFrame, text="Auto Recommend", height=20, width=40, fg="#ffffff
 manual = Button(mainFrame, text="Manual Recommend", height=20, width=40, fg="#ffffff", bg="#4f4977", relief=RIDGE, command= lambda: manualMenu(smallFileName))
 exitApp = Button(mainFrame, text="Close App", height=10, width=80, fg="#ffffff", bg="#703f3f", command=master.destroy)
 
-label.grid(column=0, row=0, columnspan=2, stick=(W,E))
+label.grid(column=0, row=0, columnspan=2, sticky=W+E)
 auto.grid(column=0, row=1, padx=5, pady=5)
 manual.grid(column=1, row=1, padx=5, pady=5)
-exitApp.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky=(W,E))
+exitApp.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky=W+E)
 
 master.mainloop()
