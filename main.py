@@ -84,9 +84,8 @@ def autoMenu(filePath):
   display(DF,"Automatic Flight Recommendations","#3f7049")
 
 def display(DF,mode,color):  
-  # if(displayDF.empty):
-  #   autoMenu()
-  # else:
+  if(DF.empty):
+    DF = getSmallerDF()
 
 
   scoreDF = theAlgorithm(DF)
@@ -189,7 +188,6 @@ def manualMenu(filePath):
   planeVar.set("Choose your preferred plane")
 
   # Create all of the labels and optionmenus 
-  menuLabel = Label(manualFrame, text="Manual Flight Recommender",font=36,padx=5, pady=5)
   airlineMenu = OptionMenu(manualFrame, airlineVar, *airlineChoices)
   originMenu = OptionMenu(manualFrame, originVar, *originChoices)
   destinationMenu = OptionMenu(manualFrame, destinationVar, *destinationChoices)
@@ -202,7 +200,6 @@ def manualMenu(filePath):
   destinationMenu.config(width=30, height=5)
   planeMenu.config(width=30, height=5)
 
-  menuLabel.grid(row=1, column=0, columnspan=5)
   airlineMenu.grid(row = 2, column = 1,sticky=(E), padx=5, pady=5)
   originMenu.grid(row = 2, column = 2,sticky=(E) ,padx=5, pady=5)
   destinationMenu.grid(row = 2, column = 3,sticky=(E), padx=5, pady=5)
