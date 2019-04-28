@@ -98,12 +98,17 @@ def autoMenu(filePath):
   display(DF,"Default Flight Recommendations","#3f7049")
 
 def display(DF,mode,color):  
+  
+  # If the user's input returned now flights, get the full dataset for display
   if(DF.empty):
     DF = getSmallerDF()
     mode = "Default Flight Recommendations"
 
+
+  # Run the algorithm on the dataset
   scoreDF = theAlgorithm(DF)
 
+  # Tkinter styles and setting up of Treeview
   style = ttk.Style()
   style.configure("Treeview", padding=20, fieldbackground=color, font=('Helvetica', 15))
 
@@ -113,9 +118,8 @@ def display(DF,mode,color):
   autoFrame.grid_rowconfigure(0,weight=1)
   autoFrame.grid_columnconfigure(0,weight=1)
 
-  # Set the treeview
+  # More Treeview
   autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Dose', 'Modification date'), style='Treeview')
-
   autoFrame.heading('#0', text='Month')
   autoFrame.heading('#1', text='Algorithm Score (Out of 1)')
   autoFrame.column('#1')
@@ -159,6 +163,7 @@ def manualMenu(filePath):
     destinationVar.set("Choose your Destination City")
     planeVar.set("Choose your preferred plane")
 
+  #get all of the entries and store in variables
   def manualLookup():
     airline = airlineVar.get()
     origin = originVar.get()
@@ -169,6 +174,7 @@ def manualMenu(filePath):
     # still has a Dataframe to look through and filter on
     filterDF = DF
 
+    # filter on only the fields that don't have the default value
     if(airline != "Choose an Airline"):
       filterDF = DF.loc[DF['Carrier'] == airline]
     if(origin != "Choose your Origin City"):
@@ -178,6 +184,7 @@ def manualMenu(filePath):
     if(plane != "Choose your preferred plane"):
       filterDF = filterDF.loc[DF['Aircraft'] == int(plane)]
 
+    # end of manual mode, sending dataframe to be displayed
     display(filterDF, "Manual Flight Recommendations","#4f4977")
 
   DF = getSmallerDF()
