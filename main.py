@@ -4,6 +4,7 @@ import pandas as pd
 import os.path
 import calendar as cal
 from datetime import datetime
+
 # reads the larger DF and cuts it down to only the necessary data
 def smallerDF(bigDF,filename):
   # drop all rows that contain airline flights with 0 seats
@@ -45,7 +46,7 @@ def theAlgorithm(DF):
   above100 = DF['Success Percentage'] > 100
   DF.loc[above100, 'Success Percentage'] = 100
 
-  scoreDF = pd.DataFrame(columns=("Month","Average Success %", "Average Available Seats %", "Algorithm Score"))
+  scoreDF = pd.DataFrame(columns=("Month","Average Success %", "Average Available Seats %", "Distance", "Algorithm Score"))
   monthList = []
 
   # for loop that converts month numbers to names
@@ -55,6 +56,7 @@ def theAlgorithm(DF):
   scoreDF['Month'] = monthList  
   averageSuccessList = []
   averageSeatList = []
+  averageDistanceList = []
 
   # for loop for actual score calculation
   for month in range(1,13):
@@ -64,29 +66,41 @@ def theAlgorithm(DF):
     # find these rows and get their average, add to list
     averageSuccessList.append((DF.loc[monthRows, 'Success Percentage']).mean())
     averageSeatList.append((DF.loc[monthRows, 'Available Percentage']).mean())
+    averageDistanceList.append((DF.loc[monthRows, 'Distance']).mean())
 
+  scoreDF['Distance'] = averageDistanceList
   scoreDF['Average Success %'] = averageSuccessList
   scoreDF['Average Available Seats %'] = averageSeatList
 
-  # The actual algorithm implementation, I consider average flight success to help each
-  # month's score. While the higher the available seats percentage, the more it hurts
-  # the overall score.
-  scoreDF['Algorithm Score'] = (50 * scoreDF['Average Success %']) + (-50 * scoreDF['Average Available Seats %'])
+
+  # gets minimum value for available seats and distance
+  minAvailable = scoreDF['Average Available Seats %'].min() * -.25
+  minDistance = scoreDF['Distance'].min()
+
+  # get the weighted scores of each column
+  successScore = scoreDF['Average Success %'] * .50
+  availableSeatScore = scoreDF['Average Available Seats %'] *-.25
+  distanceScore = scoreDF['Distance'] * -.25
+
+  # Algorithm is as follows
+  # algScore = (successScore * .5) + ((availableSeatScore adjust by minimum possible score) + (distance score adjusted by minumum possible))
+  scoreDF['Algorithm Score'] = (successScore) + ((availableSeatScore - minAvailable) + (((distanceScore / scoreDF['Distance'].max()) - (minDistance / scoreDF['Distance'].max())) * -.25))
   scoreDF.sort_values(by=['Algorithm Score'], inplace=True, ascending=False)
 
   scoreDF["Algorithm Score"] = scoreDF["Algorithm Score"].round(3)
+
   return scoreDF
 
 
 # function that is called when clicking the "auto" button
 def autoMenu(filePath):
   DF = getSmallerDF()
-  display(DF,"Automatic Flight Recommendations","#3f7049")
+  display(DF,"Default Flight Recommendations","#3f7049")
 
 def display(DF,mode,color):  
   if(DF.empty):
     DF = getSmallerDF()
-
+    mode = "Default Flight Recommendations"
 
   scoreDF = theAlgorithm(DF)
 
@@ -103,13 +117,14 @@ def display(DF,mode,color):
   autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Dose', 'Modification date'), style='Treeview')
 
   autoFrame.heading('#0', text='Month')
-  autoFrame.heading('#1', text='Algorithm Score (Out of 20)')
+  autoFrame.heading('#1', text='Algorithm Score (Out of 1)')
   autoFrame.column('#1')
   autoFrame.column('#0')
   autoFrame.grid(row=4, columnspan=2, sticky='nsew')
   
   for index,month in scoreDF.iterrows():
     #insert month into treeview
+    
     monthRow = autoFrame.insert('', 'end', text=month["Month"], values=month['Algorithm Score'])
 
     #pull flights from the current iterated month
@@ -128,7 +143,10 @@ def display(DF,mode,color):
 
     # insert list of flights for each month as sub menu
     for (carr, num, city) in zip(carriers, number, city): 
-      autoFrame.insert(monthRow, "end", text=carr, values=(num,city))
+      if(num == None):
+        autoFrame.insert(monthRow, "end", text=0, values=(0,0))
+      else:
+        autoFrame.insert(monthRow, "end", text=carr, values=(num,city))
 
 
 # function that is called when clicking the "manual" button
@@ -167,7 +185,7 @@ def manualMenu(filePath):
 
   manualFrame.columnconfigure(0, weight=1)
   manualFrame.rowconfigure(0, weight=1)
-  manualFrame.title("Manual Flight Recommendations") 
+  manualFrame.title("Custom Flight Recommendations") 
 
   # finds all of the unique values for airlines
   airlineChoices = DF['Carrier'].unique().tolist()
@@ -222,7 +240,7 @@ if not os.path.isfile(smallFileName):
 master = Tk()
 master.title("Flight Recommendations")
 
-mainFrame = Frame(master, width=500, height=500)
+mainFrame = Frame(master)
 mainFrame.grid(column=0,row=0, sticky=(N,W,E,S))
 mainFrame.pack(pady=25, padx=25)
 
