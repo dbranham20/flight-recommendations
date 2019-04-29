@@ -1,4 +1,4 @@
-# flight-recommendations
+# Flight Recommender - Daniel Branham 
 A python program that recommends flights by carrier based on data given for South Carolina and North Carolina in 2018
 
 ## Environment
