@@ -122,8 +122,10 @@ def display(DF,mode,color):
   autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Month', 'Algorithm Score (Out of 1)'), style='Treeview')
   autoFrame.heading('#0', text='Month')
   autoFrame.heading('#1', text='Algorithm Score (Out of 1)')
+  autoFrame.heading('#2', text='Origin City')
   autoFrame.column('#1')
   autoFrame.column('#0')
+  autoFrame.column('#2')
   autoFrame.grid(row=4, columnspan=2, sticky='nsew')
   
   for index,month in scoreDF.iterrows():
@@ -154,10 +156,10 @@ def manualMenu(filePath):
 
   def refreshList():
     # Default values for dropdowns
-    airlineVar.set("Choose an Airline")
-    originVar.set("Choose your Origin City")
-    destinationVar.set("Choose your Destination City")
-    planeVar.set("Choose your preferred plane")
+    airlineVar.set("Airline")
+    originVar.set("Origin City")
+    destinationVar.set("Destination City")
+    planeVar.set("Preferred Plane")
 
   #get all of the entries and store in variables
   def manualLookup():
@@ -172,7 +174,7 @@ def manualMenu(filePath):
     backupDF = DF
 
     # filter on only the fields that don't have the default value
-    if(airline != "Choose an Airline"):
+    if(airline != "Airline"):
       filterDF = DF.loc[DF['Carrier'] == airline]
       
       # the backupDF (which we know has data) is only used
@@ -180,21 +182,21 @@ def manualMenu(filePath):
       if(filterDF.empty):
         filterDF = backupDF
     
-    if(origin != "Choose your Origin City"):
+    if(origin != "Origin City"):
       backupDF = filterDF
       filterDF = filterDF.loc[DF['Origin City'] == origin]
       
       if(filterDF.empty):
         filterDF = backupDF
     
-    if(dest != "Choose your Destination City"):
+    if(dest != "Destination City"):
       backupDF = filterDF
       filterDF = filterDF.loc[DF['Destination City'] == dest]
       
       if(filterDF.empty):
         filterDF = backupDF
     
-    if(plane != "Choose your preferred plane"):
+    if(plane != "Preferred Plane"):
       backupDF = filterDF
       filterDF = filterDF.loc[DF['Aircraft'] == int(plane)]
       
@@ -224,10 +226,10 @@ def manualMenu(filePath):
   planeVar = StringVar(value=planeChoices[0])
 
   # Default values for dropdowns
-  airlineVar.set("Choose an Airline")
-  originVar.set("Choose your Origin City")
-  destinationVar.set("Choose your Destination City")
-  planeVar.set("Choose your preferred plane")
+  airlineVar.set("Airline")
+  originVar.set("Origin City")
+  destinationVar.set("Destination City")
+  planeVar.set("Preferred Plane")
 
   # Create all of the labels and optionmenus 
   airlineMenu = OptionMenu(manualFrame, airlineVar, *airlineChoices)
