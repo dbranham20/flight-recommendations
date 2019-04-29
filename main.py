@@ -254,7 +254,7 @@ def manualMenu(filePath):
 
 
 # Start of Main
-DF = pd.read_csv("ProjectData.csv")
+DF = pd.read_csv("BigProjectData.csv", low_memory=False)
 
 # If the smaller dataframe used for the rest
 # of the program has not been made, make it
