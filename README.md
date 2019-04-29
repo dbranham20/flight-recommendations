@@ -23,7 +23,7 @@ From my correlation chart, I could see that none of the provided columns had any
 
 In order to add more conditions to my algorithm, I went ahead and added in the distance for each flight as well and assumed that a customer of the program would want to take the shortest flight possible. My projects algorithm is represented as a math equation below: 
 <br/>
-![algorithm picture](alg.png)
+![algorithm picture](pictures\alg.png)
 
 Where 
 ```
@@ -48,17 +48,22 @@ The automatic, or "default", section of my program will start with the full data
 
 This new dataset will be fed through a treeview to display the month and its algorithm score. While looping through each month, the program will pull out 5 flights from that month and populate those as children of the month in the treeview. All of this is displayed in a final File Explorer like GUI:
 <br/>
-![auto picture](auto.png)
+![auto picture](pictures\auto.png)
 
 
 ## Explanation of Manual Mode
 The manual, or "custom", section of my program will start by prompting the user with a set of dropdown that allow them to filter the dataset on the columns "Airline", "Origin City", "Destination City", and "Flight Number". Once the user has made their choices they can hit the generate button and the full dataset will be filtered down by any combination of given criteria. The user has the choice to leave any fields blank and it will still generate a report on just the criteria that was given. The user also has the option of a "Reset" button that will reset the GUI and allow for new picking of criteria.
 <br/>
-![manual prompt picture](manualPrompt.png)
+![manual prompt picture](pictures\manualPrompt.png)
 
-The new and filtered dataset is now run through the mentioned algorithm and same GUI function as the automatic mode. This decreases the amount of code written dramatically while still offering the desired results. It is important to note that if the user's given criteria result in no matches within the large dataset, the program will, by default, display the automatic mode results.
+The new and filtered dataset is now run through the mentioned algorithm and same GUI function as the automatic mode. This decreases the amount of code written dramatically while still offering the desired results. It is important to note that if the user's given criteria results in no matches within the large dataset, the program will remove criteria until it has a data set with data in it.
+
+For example, if the user gives "Delta Air Lines" with an Origin City of "Charlotte,NC" and a destination of "Atlanta,GA" on plane number "677", the dataset will return nothing because there are no flights matching that plane number. So, the code will exclude the plane number and search for Delta Airlines flights with Origin City "Charlotte, NC" and Destination City "Atlanta,GA."
 <br/>
-![manual picture](manual.png)
+![manual picture](pictures\manual.png)
 
 
-## Validation
+## Testing and Validation
+There is not much need for input validation in my project as there are no opportunities for the customer to input custom data. Everything input section for the customer is pre-populated with valid data from the dataset itself. If the user were to give enough criteria that there would be no matches for their search in the dataset, the program would automatically back up on criteria until it finds a combination of given criteria that does have data.
+
+Other testing of my program included multiple run throughs of my program and providing multiple different combinations for the algorithm to work through. Clicking all of the buttons and scrolling through all of the option menus to make sure everything worked correctly.

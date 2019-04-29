@@ -88,7 +88,7 @@ def theAlgorithm(DF):
   scoreDF.sort_values(by=['Algorithm Score'], inplace=True, ascending=False)
 
   scoreDF["Algorithm Score"] = scoreDF["Algorithm Score"].round(3)
-
+  
   return scoreDF
 
 
@@ -119,7 +119,7 @@ def display(DF,mode,color):
   autoFrame.grid_columnconfigure(0,weight=1)
 
   # More Treeview
-  autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Dose', 'Modification date'), style='Treeview')
+  autoFrame = ttk.Treeview(autoFrame,height=12,columns=('Month', 'Algorithm Score (Out of 1)'), style='Treeview')
   autoFrame.heading('#0', text='Month')
   autoFrame.heading('#1', text='Algorithm Score (Out of 1)')
   autoFrame.column('#1')
@@ -127,11 +127,10 @@ def display(DF,mode,color):
   autoFrame.grid(row=4, columnspan=2, sticky='nsew')
   
   for index,month in scoreDF.iterrows():
-    #insert month into treeview
-    
-    monthRow = autoFrame.insert('', 'end', text=month["Month"], values=month['Algorithm Score'])
+    #insert month into treeview    
+    monthRow = autoFrame.insert('', 'end', text=month["Month"], values=(month['Algorithm Score']))
 
-    #pull flights from the current iterated month
+    #pull flights from the current iterated month, offset 1
     monthNum = datetime.strptime(month["Month"], '%B')
     monthFlightList = DF.loc[DF['Month'] == monthNum.month]
     
@@ -147,10 +146,7 @@ def display(DF,mode,color):
 
     # insert list of flights for each month as sub menu
     for (carr, num, city) in zip(carriers, number, city): 
-      if(num == None):
-        autoFrame.insert(monthRow, "end", text=0, values=(0,0))
-      else:
-        autoFrame.insert(monthRow, "end", text=carr, values=(num,city))
+      autoFrame.insert(monthRow, "end", text=carr, values=(num,city))
 
 
 # function that is called when clicking the "manual" button
@@ -173,16 +169,37 @@ def manualMenu(filePath):
     # if the first option is not selected, the program
     # still has a Dataframe to look through and filter on
     filterDF = DF
+    backupDF = DF
 
     # filter on only the fields that don't have the default value
     if(airline != "Choose an Airline"):
       filterDF = DF.loc[DF['Carrier'] == airline]
+      
+      # the backupDF (which we know has data) is only used
+      # when the filtering causes an empty dataset
+      if(filterDF.empty):
+        filterDF = backupDF
+    
     if(origin != "Choose your Origin City"):
+      backupDF = filterDF
       filterDF = filterDF.loc[DF['Origin City'] == origin]
+      
+      if(filterDF.empty):
+        filterDF = backupDF
+    
     if(dest != "Choose your Destination City"):
+      backupDF = filterDF
       filterDF = filterDF.loc[DF['Destination City'] == dest]
+      
+      if(filterDF.empty):
+        filterDF = backupDF
+    
     if(plane != "Choose your preferred plane"):
+      backupDF = filterDF
       filterDF = filterDF.loc[DF['Aircraft'] == int(plane)]
+      
+      if(filterDF.empty):
+        filterDF = backupDF
 
     # end of manual mode, sending dataframe to be displayed
     display(filterDF, "Manual Flight Recommendations","#4f4977")
@@ -233,6 +250,7 @@ def manualMenu(filePath):
   refresh.grid(column=4,row=3,columnspan=2, padx=5, pady=5, sticky=(W,E))
 
 
+
 # Start of Main
 DF = pd.read_csv("ProjectData.csv")
 
@@ -261,5 +279,11 @@ label.grid(column=0, row=0, columnspan=2, sticky=W+E)
 auto.grid(column=0, row=1, padx=5, pady=5)
 manual.grid(column=1, row=1, padx=5, pady=5)
 exitApp.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky=W+E)
+
+
+# # Test and Validation code
+# DF = pd.read_csv("test_data.csv")
+# testDF = theAlgorithm(DF)
+# testDF.to_csv("test_results.csv")
 
 master.mainloop()

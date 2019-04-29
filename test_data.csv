@@ -1,0 +1,4 @@
+Carrier,Origin City,Destination City,Month,Aircraft,Seats,Passengers,Distance,Departures Performed,Departures Scheduled
+Envoy Air,"Montgomery, AL","Charlotte, NC",5,675,50,34,372,1,1
+American Airlines Inc.,"Birmingham, AL","Charlotte, NC",6,694,150,127,350,1,1
+PSA Airlines Inc.,"Mobile, AL","Charlotte, NC",7,631,63,38,526,1,1
